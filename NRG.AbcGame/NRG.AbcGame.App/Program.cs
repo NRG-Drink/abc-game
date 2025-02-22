@@ -26,7 +26,7 @@ internal class Program
                 .UseSerilog((context, services, LoggerConfiguration) =>
                     LoggerConfiguration.ReadFrom.Configuration(context.Configuration)
                 )
-                .UseConsoleLifetime()
+                //.UseConsoleLifetime()
                 .Build();
 
             Console.WriteLine("Start host.");

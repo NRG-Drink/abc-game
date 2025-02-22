@@ -2,8 +2,13 @@
 
 namespace NRG.AbcGame.App;
 
-public class GameWorker : BackgroundService
+public class GameWorker(IHost host) : BackgroundService
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-        => new GameHost().HostGame();
+    private readonly GameHost _gameHost = new();
+
+    protected override async Task ExecuteAsync(CancellationToken ct)
+    {
+        await _gameHost.HostGame(ct);
+        await host.StopAsync(ct);
+    }
 }
