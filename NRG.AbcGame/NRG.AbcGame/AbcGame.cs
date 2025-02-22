@@ -23,7 +23,7 @@ public class AbcGame
             while (!Token.IsCancellationRequested)
             {
                 await Task.Delay(300);
-                await WriteTime(_stopwatch.Elapsed);
+                await PrintTime(_stopwatch.Elapsed, _time);
             }
         });
     }
@@ -102,7 +102,7 @@ public class AbcGame
         ToEndLine();
     }
 
-    public async Task WriteTime(TimeSpan time)
+    public async Task PrintTime(TimeSpan time, TimeSpan maxTime)
     {
         if (_cts.IsCancellationRequested)
         {
@@ -111,7 +111,8 @@ public class AbcGame
 
         var (l, t) = Console.GetCursorPosition();
         Console.SetCursorPosition(50, _gameLine);
-        await Console.Out.WriteLineAsync($"time: {time:hh\\:mm\\:ss\\.fff}");
+        var mTime = time < maxTime ? time : maxTime;
+        await Console.Out.WriteLineAsync($"time: {mTime:hh\\:mm\\:ss\\.fff}");
         Console.SetCursorPosition(l, t);
 
         if (_cts.IsCancellationRequested)
