@@ -1,7 +1,7 @@
 ﻿namespace NRG.AbcGame.UiComponents;
 
 public class Menu(
-    MenuOption[] menuOptions,
+    MenuOptionBase[] menuOptions,
     int menuTopLine,
     ConsoleColor accentColor = ConsoleColor.DarkGreen
     )
@@ -10,9 +10,9 @@ public class Menu(
     private int _menuSelect = 0;
     private bool _menuCancel = false;
 
-    public MenuOption[] Options => menuOptions;
+    public MenuOptionBase[] Options => menuOptions;
 
-    public async Task<(MenuOption Option, bool IsCancelled)> ChooseOptionAsync()
+    public async Task<(MenuOptionBase Option, bool IsCancelled)> ChooseOptionAsync()
     {
         Console.CursorVisible = false;
         Console.CancelKeyPress += CancelMenu;
@@ -80,9 +80,9 @@ public class Menu(
         Console.SetCursorPosition(0, menuTopLine);
         foreach (var e in menuOptions)
         {
-            var str = e.IsMenuExit
-                ? $"  {e.Name}"
-                : $"  {e.Name} - {e.Value}";
+            var str = e.IsValueShown
+                ? $"  {e.Name} - {e.Value}"
+                : $"  {e.Name}";
             Console.WriteLine(str);
         }
 

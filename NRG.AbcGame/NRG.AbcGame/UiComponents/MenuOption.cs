@@ -1,43 +1,34 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Microsoft.Extensions.Primitives;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace NRG.AbcGame.UiComponents;
 
-public class MenuOption
+public class MenuOptionExit(string name) : MenuOptionBase(name, string.Empty, e => true, true, false);
+public class MenuOption(string name, string value, Predicate<string> validationFunc) : MenuOptionBase(name, value, validationFunc, false, true);
+public class MenuOptionExecute(string name, Func<Task> asyncFunc) : MenuOptionBase(name, string.Empty, e => true, false, false)
+{
+    public override Task SetUserValueAsync(int lineX, int lineY)
+        => asyncFunc();
+}
+
+public abstract class MenuOptionBase(
+    string name,
+    string value,
+    Predicate<string> validFunc,
+    bool isMenuExit,
+    bool isValueShown
+    )
 {
     private bool _isCancelled = false;
 
-    [SetsRequiredMembers]
-    public MenuOption(string name, bool isExit)
-    {
-        Name = name;
-        Value = string.Empty;
-        IsMenuExit = isExit;
-    }
+    public string Name => name;
+    public string Value { get; private set; } = value;
+    public Predicate<string> IsValidFunc => validFunc;
+    public bool IsMenuExit => isMenuExit;
+    public bool IsValueShown => isValueShown;
 
-    [SetsRequiredMembers]
-    public MenuOption(string name, string value)
-    {
-        Name = name;
-        Value = value;
-        IsMenuExit = false;
-    }
-
-    [SetsRequiredMembers]
-    public MenuOption(string name, string value, Predicate<string> validateFunc)
-    {
-        Name = name;
-        Value = value;
-        IsMenuExit = false;
-        IsValidFunc = validateFunc;
-    }
-
-    public required string Name { get; init; }
-    public required string Value { get; set; }
-    public Predicate<string> IsValidFunc { get; init; } = e => true;
-    public bool IsMenuExit { get; init; } = false;
-
-    public async Task SetUserValueAsync(int lineX, int lineY)
+    public virtual async Task SetUserValueAsync(int lineX, int lineY)
     {
         _isCancelled = false;
         var str = new StringBuilder(Value);
