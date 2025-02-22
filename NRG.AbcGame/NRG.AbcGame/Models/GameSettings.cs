@@ -2,7 +2,8 @@
 
 public record GameSettings(
     string Topic = "Animals",
-    string Time = "00:03:00",
+    string GameTime = "00:03:00",
     int StartCountdown = 3,
-    int ExtraTime = 10
-    ); 
+    int ExtraTimeAdd = 10,
+    bool IsExtraTimeEnabled = true
+    );

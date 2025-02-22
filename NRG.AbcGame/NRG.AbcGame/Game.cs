@@ -4,12 +4,12 @@ using System.Text;
 
 namespace NRG.AbcGame;
 
-public class Game(GameMenu settings)
+public class Game(GameSettings settings)
 {
     private readonly Dictionary<char, List<string>> _wordList = InitValues();
     private readonly StringBuilder _inputWord = new();
     private Stopwatch _sw = new();
-    private TimeSpan _playTime = settings.Time;
+    private TimeSpan _playTime = DateTime.Parse(settings.GameTime).TimeOfDay;
     private int _inputLine;
     private int _timeLine;
     private int _resultLine;
@@ -26,7 +26,7 @@ public class Game(GameMenu settings)
         _isCancelled = false;
 
         await PrintCountdownAsync(settings.StartCountdown);
-        
+
 
         PrintWorldList();
         PrintTime();
@@ -46,20 +46,20 @@ public class Game(GameMenu settings)
                 Console.SetCursorPosition(_inputWord.Length, _inputLine);
             }
 
-            if (_isTimeExceeded)
+            if (_isTimeExceeded && settings.IsExtraTimeEnabled)
             {
                 _sw.Stop();
                 var color = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.SetCursorPosition(0, _inputLine + 1);
-                Console.Write($"Buy {settings.ExtraTime} seconds overtime? (y|n) ");
+                Console.Write($"Buy {settings.ExtraTimeAdd} seconds overtime? (y|n) ");
                 Console.ForegroundColor = color;
                 var exceedInput = Console.ReadLine();
                 if (exceedInput?.StartsWith("y", StringComparison.InvariantCultureIgnoreCase) ?? false)
                 {
                     _isTimeExceeded = false;
                     lastTimePrint = 0;
-                    _playTime = _playTime.Add(TimeSpan.FromSeconds(settings.ExtraTime));
+                    _playTime = _playTime.Add(TimeSpan.FromSeconds(settings.ExtraTimeAdd));
                     Console.SetCursorPosition(0, _inputLine + 1);
                     Console.Write(Enumerable.Repeat(' ', 35).ToArray());
                     Console.SetCursorPosition(_inputWord.Length, _inputLine);

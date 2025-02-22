@@ -12,20 +12,20 @@ public class GameHost
         )
     {
         var gameSettings = await _saver.LoadSettingsOrDefaultAsync();
-        var _menu = new GameMenu(_folder, gameSettings, _saver.SaveSettings);
+        var menu = new GameMenu(_folder, gameSettings, _saver.SaveSettings);
 
         var isReplay = true;
         while (isReplay)
         {
             Console.WriteLine("Let's start a new ABC-Game.");
-            var isExit = await _menu.RunMenu(Console.GetCursorPosition().Top);
+            var (isExit, settings) = await menu.RunMenu(Console.GetCursorPosition().Top);
             if (isExit)
             {
                 Console.WriteLine("Thanks for playing the ABC-Game. See you soon.");
                 break;
             }
 
-            var game = new Game(_menu);
+            var game = new Game(settings);
             var run = await game.RunGame(Console.GetCursorPosition().Top + 1);
 
             var isSave = !run.IsCancelled;
