@@ -5,28 +5,49 @@ namespace NRG.AbcGame;
 public class GameHost
 {
     private static readonly string _folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ABC-Game");
-    private readonly GameSettings _settings = new(_folder);
-    private readonly FileSaver _saver = new(_folder);
+    private readonly FileManager _saver = new(_folder);
 
     public async Task HostGame(
         CancellationToken ct = default
         )
     {
+        var gameSettings = await _saver.LoadSettingsOrDefaultAsync();
+        var _menu = new GameMenu(_folder, gameSettings, _saver.SaveSettings);
+
         var isReplay = true;
         while (isReplay)
         {
             Console.WriteLine("Let's start a new ABC-Game.");
-            var isExit = await _settings.RunMenu(Console.GetCursorPosition().Top);
+            var isExit = await _menu.RunMenu(Console.GetCursorPosition().Top);
             if (isExit)
             {
                 Console.WriteLine("Thanks for playing the ABC-Game. See you soon.");
                 break;
             }
 
-            var game = new Game(_settings);
+            var game = new Game(_menu);
             var run = await game.RunGame(Console.GetCursorPosition().Top + 1);
 
-            await _saver.Save(run);
+            var isSave = !run.IsCancelled;
+            if (run.IsCancelled)
+            {
+                Console.Write("Do you want to save the cancelled game? (y|n)  ");
+                var saveInput = Console.ReadKey();
+                if (saveInput.Key is ConsoleKey.Y)
+                {
+                    isSave = true;
+                }
+            }
+
+            if (isSave)
+            {
+                await _saver.Save(run);
+                Console.WriteLine("\nYour run has been saved.");
+            }
+            else
+            {
+                Console.WriteLine("\nYour run was not saved.");
+            }
 
             Console.WriteLine("Thanks for playing the ABC-Game.");
             Console.WriteLine("Have a closer look at your results or play again.");

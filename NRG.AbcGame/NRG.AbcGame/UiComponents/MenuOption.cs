@@ -4,9 +4,22 @@ using System.Text;
 
 namespace NRG.AbcGame.UiComponents;
 
-public class MenuOptionExit(string name) : MenuOptionBase(name, string.Empty, e => true, true, false);
-public class MenuOption(string name, string value, Predicate<string> validationFunc) : MenuOptionBase(name, value, validationFunc, false, true);
-public class MenuOptionExecute(string name, Func<Task> asyncFunc) : MenuOptionBase(name, string.Empty, e => true, false, false)
+public class MenuOptionExit(string name) 
+    : MenuOptionBase(name, string.Empty, e => true, true, false);
+public class MenuOption(string name, string value, Predicate<string> validationFunc) 
+    : MenuOptionBase(name, value, validationFunc, false, true);
+public class MenuOption<T>(
+    string name,
+    string value,
+    Predicate<string> validationFunc,
+    Func<string, T> toValueFunc
+    ) 
+    : MenuOption(name, value, validationFunc)
+{
+    public T ValueTyped => toValueFunc(Value);
+}
+public class MenuOptionExecute(string name, Func<Task> asyncFunc) 
+    : MenuOptionBase(name, string.Empty, e => true, false, false)
 {
     public override Task SetUserValueAsync(int lineX, int lineY)
         => asyncFunc();

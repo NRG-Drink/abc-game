@@ -4,12 +4,12 @@ using System.Text;
 
 namespace NRG.AbcGame;
 
-public class Game(GameSettings settings)
+public class Game(GameMenu settings)
 {
     private readonly Dictionary<char, List<string>> _wordList = InitValues();
     private readonly StringBuilder _inputWord = new();
-    private readonly TimeSpan _playTime = settings.Time;
     private Stopwatch _sw = new();
+    private TimeSpan _playTime = settings.Time;
     private int _inputLine;
     private int _timeLine;
     private int _resultLine;
@@ -18,12 +18,15 @@ public class Game(GameSettings settings)
 
     public async Task<GameRun> RunGame(int line)
     {
-        _isCancelled = false;
         _inputLine = line;
         _resultLine = line + 3;
         _timeLine = _resultLine - 1;
         Console.CancelKeyPress += CancelMenu;
         long lastTimePrint = 0;
+        _isCancelled = false;
+
+        await PrintCountdownAsync(settings.StartCountdown);
+        
 
         PrintWorldList();
         PrintTime();
@@ -37,19 +40,42 @@ public class Game(GameSettings settings)
             var diff = _sw.ElapsedMilliseconds - lastTimePrint;
             if (diff > 1_000)
             {
-                _isTimeExceeded = _sw.Elapsed > settings.Time;
+                _isTimeExceeded = _sw.Elapsed > _playTime;
                 lastTimePrint = _sw.ElapsedMilliseconds;
                 PrintTime();
                 Console.SetCursorPosition(_inputWord.Length, _inputLine);
             }
+
+            if (_isTimeExceeded)
+            {
+                _sw.Stop();
+                var color = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.SetCursorPosition(0, _inputLine + 1);
+                Console.Write($"Buy {settings.ExtraTime} seconds overtime? (y|n) ");
+                Console.ForegroundColor = color;
+                var exceedInput = Console.ReadLine();
+                if (exceedInput?.StartsWith("y", StringComparison.InvariantCultureIgnoreCase) ?? false)
+                {
+                    _isTimeExceeded = false;
+                    lastTimePrint = 0;
+                    _playTime = _playTime.Add(TimeSpan.FromSeconds(settings.ExtraTime));
+                    Console.SetCursorPosition(0, _inputLine + 1);
+                    Console.Write(Enumerable.Repeat(' ', 35).ToArray());
+                    Console.SetCursorPosition(_inputWord.Length, _inputLine);
+                    _sw.Start();
+                }
+            }
         }
 
+        _sw.Stop();
         Console.CancelKeyPress -= CancelMenu;
         Console.SetCursorPosition(0, _resultLine + _wordList.Count);
 
         return new()
         {
-            Time = settings.Time,
+            MaxTime = _playTime,
+            GameTime = _isTimeExceeded ? _playTime : _sw.Elapsed,
             Topic = settings.Topic,
             Values = _wordList
         };
@@ -112,6 +138,37 @@ public class Game(GameSettings settings)
         }
 
         return input;
+    }
+
+    private async Task PrintCountdownAsync(int seconds)
+    {
+        var template = "Prepare, the game will start in {0} seconds. ";
+        var blank = Enumerable.Repeat(' ', template.Length).ToArray();
+        Console.CursorVisible = false;
+        for (var i = seconds; i > 0 && !_isCancelled; i--)
+        {
+            Console.SetCursorPosition(0, _inputLine);
+            Console.Write(template, i);
+            await Task.Delay(980);
+        }
+
+        Console.SetCursorPosition(0, _inputLine);
+        Console.Write(blank);
+
+        if (_isCancelled)
+        {
+            Console.SetCursorPosition(0, _inputLine);
+            Console.WriteLine("Game was cancelled.");
+            Console.CursorVisible = true;
+            return;
+        }
+
+        Console.SetCursorPosition(0, _inputLine);
+        Console.Write($"Game Start!");
+        await Task.Delay(700);
+        Console.SetCursorPosition(0, _inputLine);
+        Console.Write(blank);
+        Console.CursorVisible = true;
     }
 
     private void PrintTime()
