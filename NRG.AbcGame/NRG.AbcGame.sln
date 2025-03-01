@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NRG.AbcGame", "NRG.AbcGame\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NRG.AbcGame.Tests", "NRG.AbcGame.Tests\NRG.AbcGame.Tests.csproj", "{528EA0BA-B568-4ECC-820D-ADC1D886D468}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NRG.AbcGame.AppUi", "NRG.AbcGame.AppUi\NRG.AbcGame.AppUi.csproj", "{9C4AEC4F-F44C-4B0D-8CF7-B8130C19A8B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{528EA0BA-B568-4ECC-820D-ADC1D886D468}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{528EA0BA-B568-4ECC-820D-ADC1D886D468}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{528EA0BA-B568-4ECC-820D-ADC1D886D468}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C4AEC4F-F44C-4B0D-8CF7-B8130C19A8B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C4AEC4F-F44C-4B0D-8CF7-B8130C19A8B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C4AEC4F-F44C-4B0D-8CF7-B8130C19A8B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C4AEC4F-F44C-4B0D-8CF7-B8130C19A8B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

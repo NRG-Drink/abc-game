@@ -35,11 +35,11 @@ public class FileManager(string baseFolder)
         await File.WriteAllTextAsync(_settingsFilePath, fileContent);
     }
 
-    public async Task Save(GameRun run)
+    public async Task SaveAsync(GameRun run)
     {
         EnsureFolderCreate();
 
-        var fileName = $"{DateTime.Now:yyyy-MM-ddTHHmmss}_{run.Topic}{(run.IsCancelled ? string.Empty : "_cancelled")}";
+        var fileName = $"{DateTime.Now:yyyy-MM-ddTHHmmss}_{run.Topic}{(run.IsCancelled ? "_cancelled" : string.Empty)}";
         var path = Path.Combine(baseFolder, $"{fileName}.json");
 
         var fileContent = JsonSerializer.Serialize(run, JsonOptions);

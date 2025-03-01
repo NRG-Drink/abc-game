@@ -41,7 +41,7 @@ public class GameHost
 
             if (isSave)
             {
-                await _saver.Save(run);
+                await _saver.SaveAsync(run);
                 Console.WriteLine("\nYour run has been saved.");
             }
             else

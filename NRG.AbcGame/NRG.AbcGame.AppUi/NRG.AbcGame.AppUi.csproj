@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.40" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.5" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Emoji" Version="4.11.5" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NRG.AbcGame\NRG.AbcGame.csproj" />
+  </ItemGroup>
+
+</Project>
