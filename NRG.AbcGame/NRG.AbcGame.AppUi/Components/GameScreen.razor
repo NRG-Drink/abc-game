@@ -1,19 +1,19 @@
-﻿@using NRG.AbcGame.Models
-@using NRG.AbcGame.Persistence
+﻿@using NRG.AbcGame.AppUi.DataBase.Models
+@using NRG.AbcGame.AppUi.Services.Savers
 @using System.Diagnostics
 
 <FluentStack Orientation="Orientation.Horizontal"
-             HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+HorizontalAlignment="HorizontalAlignment.SpaceBetween">
 
     <FluentTextField @bind-Value="_topic"
-                     Appearance="FluentInputAppearance.Outline"
-                     Autofocus
-                     Spellcheck="true"
-                     Placeholder="Topic"
-                     TextFieldType="TextFieldType.Text"
-                     Disabled="(_isGameRunning)"
-                     AutoComplete="true"
-                     Size="20">
+    Appearance="FluentInputAppearance.Outline"
+    Autofocus
+    Spellcheck="true"
+    Placeholder="Topic"
+    TextFieldType="TextFieldType.Text"
+    Disabled="(_isGameRunning)"
+    AutoComplete="true"
+    Size="20">
     </FluentTextField>
 
     <FluentLabel Typo="Typography.Subject">
@@ -23,41 +23,41 @@
 </FluentStack>
 
 <FluentStack Orientation="Orientation.Horizontal"
-             HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+HorizontalAlignment="HorizontalAlignment.SpaceBetween">
 
     <FluentTextField @bind-Value="_inputWord"
-                     @onkeyup="InputWordKeyUp"
-                     @ref=_inputWordRef
-                     Appearance="FluentInputAppearance.Outline"
-                     Spellcheck="true"
-                     Placeholder="Input Word"
-                     TextFieldType="TextFieldType.Text"
-                     Disabled="(!_isGameRunning)"
-                     Size="80">
+    @onkeyup="InputWordKeyUp"
+    @ref=_inputWordRef
+    Appearance="FluentInputAppearance.Outline"
+    Spellcheck="true"
+    Placeholder="Input Word"
+    TextFieldType="TextFieldType.Text"
+    Disabled="(!_isGameRunning)"
+    Size="80">
 
         <FluentIcon Value="@(new Icons.Regular.Size20.ArrowRight())" Color="@Color.Neutral" Slot="end" />
 
     </FluentTextField>
 
     <FluentStack Orientation="Orientation.Horizontal"
-                 HorizontalAlignment="HorizontalAlignment.End">
+    HorizontalAlignment="HorizontalAlignment.End">
 
         <FluentButton Appearance="Appearance.Accent"
-                      Disabled="@(_isGameRunning)"
-                      OnClick="StartNewGame"
-                      IconEnd="@(new Icons.Regular.Size20.FlagCheckered())">
+        Disabled="@(_isGameRunning)"
+        OnClick="StartNewGame"
+        IconEnd="@(new Icons.Regular.Size20.FlagCheckered())">
             Start
         </FluentButton>
         <FluentButton Appearance="Appearance.Accent"
-                      Disabled="@(!_isGameRunning)"
-                      OnClick="StopGame"
-                      IconStart="@(new Icons.Regular.Size20.ScanTypeOff())">
+        Disabled="@(!_isGameRunning)"
+        OnClick="StopGame"
+        IconStart="@(new Icons.Regular.Size20.ScanTypeOff())">
             Stop
         </FluentButton>
         <FluentButton Appearance="Appearance.Accent"
-                      Disabled="@(!_wordList.Any(e => e.Value.Any()) || _isGameRunning)"
-                      OnClick="SaveGame"
-                      IconStart="@(new Icons.Regular.Size20.Save())">
+        Disabled="@(!_wordList.Any(e => e.Value.Any()) || _isGameRunning)"
+        OnClick="SaveGame"
+        IconStart="@(new Icons.Regular.Size20.Save())">
             Save
         </FluentButton>
 
@@ -68,21 +68,21 @@
 <FluentDivider Orientation="Orientation.Horizontal" Role="DividerRole.Separator" Style="margin: 5px;" />
 
 <FluentStack Orientation="Orientation.Vertical"
-             VerticalGap="0">
+VerticalGap="0">
 
     @foreach (var words in _wordList)
     {
         <FluentStack Orientation="Orientation.Horizontal"
-                     VerticalGap="0">
+        VerticalGap="0">
 
             <FluentLabel Weight="FontWeight.Bolder"
-                         Typo="Typography.Body"
-                         Style="font-family:Consolas; font-size:large;">
+            Typo="Typography.Body"
+            Style="font-family:Consolas; font-size:large;">
                 @words.Key
             </FluentLabel>
 
             <FluentLabel Typo="Typography.Body">
-                @($" {string.Join(", ", words.Value)}")
+                @($" {string.Join(", ", words.Value.Select(e => e.Value))}")
             </FluentLabel>
 
         </FluentStack>
@@ -95,14 +95,15 @@
 @code {
     [Inject] public IDialogService DialogService { get; set; } = null!;
     [Inject] public IToastService ToastService { get; set; } = null!;
-    [Inject] public FileManager FileManager { get; set; } = null!;
+    [Inject] public ISaver Saver { get; set; } = null!;
 
-    private Dictionary<char, List<string>> _wordList = InitWordList();
+    private Dictionary<char, List<GameInput>> _wordList = InitWordList();
     private string _topic = "Animals";
     private string _inputWord = string.Empty;
     private bool _isGameRunning = false;
 
     private System.Threading.Timer? _timer;
+    private DateTime _start = DateTime.UtcNow;
     private Stopwatch _sw = new();
     private FluentTextField _inputWordRef = null!;
 
@@ -110,11 +111,11 @@
     {
     }
 
-    private static Dictionary<char, List<string>> InitWordList()
+    private static Dictionary<char, List<GameInput>> InitWordList()
         => Enumerable
             .Range('A', 26)
             .Order()
-            .ToDictionary(e => (char)e, e => new List<string>());
+            .ToDictionary(e => (char)e, e => new List<GameInput>());
 
     private async Task StopGame()
     {
@@ -135,6 +136,7 @@
         await Task.Delay(20);
 
         _inputWordRef.FocusAsync();
+        _start = DateTime.UtcNow;
         _sw = Stopwatch.StartNew();
 
         _timer = new System.Threading.Timer(TimerCallback, null, 0, 100);
@@ -147,15 +149,15 @@
     {
         var run = new GameRun()
         {
-            GameTime = _sw.Elapsed,
-            MaxTime = _sw.Elapsed,
+            StartUTC = _start,
+            Time = _sw.Elapsed,
             Topic = _topic,
             Values = _wordList,
         };
 
         try
         {
-            await FileManager.SaveAsync(run);
+            await Saver.SaveAsync(run);
             ToastService.ShowSuccess("Saved successfully.");
         }
         catch (Exception ex)
@@ -184,7 +186,7 @@
             _wordList[c] = [];
         }
 
-        _wordList[c].Add(_inputWord.Trim());
+        _wordList[c].Add(new() { TimeUTC = DateTime.UtcNow, Value = _inputWord.Trim() });
         _inputWord = string.Empty;
 
         return Task.CompletedTask;
